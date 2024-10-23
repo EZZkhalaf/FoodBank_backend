@@ -1,6 +1,7 @@
-// const express = require('express');
-// const router = require('react-router-dom');
+const express = require('express');
+const addIngredient= require('../Controllers/ingredients');
+const router = express.Router();
 
-// router.post('/', addIngredient);
+router.post('/', addIngredient);
 
-// module.exports = router;
+module.exports = router;

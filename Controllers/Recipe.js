@@ -1,7 +1,8 @@
 
 const express = require('express');
 const Recipe = require("../model/recipe");
-
+const Ingredient = require('../model/ingredient');
+const User = require('../model/User')
 
 const getRecipes = async(req,res)=>{
     const recipes = await Recipe.find();
@@ -28,23 +29,72 @@ const getRecipe = async (req, res) => {
 
 
 
+// const addRecipe = async (req, res) => {
+//     const { recipe_title, recipe_description, instructions, ingredients, recipe_user, recipe_image } = req.body;
+
+//     // Check for required fields
+//     if (!recipe_title || !instructions || !ingredients || !recipe_user) {
+//         return res.status(400).json({ message: 'Required fields are empty ...' });
+//     }
+
+//     try {
+//         // Validate ingredient name and chack if they exist in the database 
+//         const validIngredients = await Ingredient.find({ '_id': { $in: ingredients } });
+//         if (validIngredients.length !== ingredients.length) {
+//             return res.status(400).json({ message: 'One or more ingredient IDs are invalid.' });
+//         }
+
+//         // Validate user ID
+//         const validUser = await User.findById(recipe_user);
+//         if (!validUser) {
+//             return res.status(400).json({ message: 'User ID is invalid.' });
+//         }
+
+//         // Create a new recipe
+//         const newRecipe = await Recipe.create({
+//             recipe_title,
+//             recipe_description,
+//             instructions,
+//             ingredients,
+//             recipe_user,
+//             recipe_image
+//         });
+
+//         // Respond with the created recipe
+//         return res.status(201).json(newRecipe);
+//     } catch (error) {
+//         // Handle any errors that occur during creation
+//         return res.status(500).json({ message: 'Error creating recipe', error: error.message });
+//     }
+// };
+
+
 const addRecipe = async (req, res) => {
-    const { title, description, instructions, ingredients, user_id, imgURL } = req.body;
+    const { recipe_title, recipe_description, instructions, ingredients, recipe_user, recipe_image } = req.body;
 
     // Check for required fields
-    if (!title || !instructions || !ingredients) {
+    if (!recipe_title || !instructions || !ingredients || !recipe_user) {
         return res.status(400).json({ message: 'Required fields are empty ...' });
     }
 
     try {
+        // Validate that all ingredient names exist in the Ingredient collection
+        const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredients } });
+        const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name);
+
+        // Check if all provided ingredient names are valid
+        if (validIngredientNames.length !== ingredients.length) {
+            return res.status(400).json({ message: 'One or more ingredient names are invalid or do not exist.' });
+        }
+
         // Create a new recipe
         const newRecipe = await Recipe.create({
-            title,
-            description,
+            recipe_title,
+            recipe_description,
             instructions,
-            ingredients,
-            user: user_id, // Ensure to include the user field if needed
-            imgURL: imgURL // Add the image URL here
+            ingredients, // Store the valid ingredient names
+            recipe_user,
+            recipe_image
         });
 
         // Respond with the created recipe
@@ -55,24 +105,35 @@ const addRecipe = async (req, res) => {
     }
 };
 
+module.exports = addRecipe;
 
 
-const editRecipe = async(req,res)=>{
-    const { title, ingredients , instructions , description} = req.body;
+const editRecipe = async (req, res) => {
+    const { recipe_title, ingredients, instructions, recipe_description } = req.body;
     let recipe = await Recipe.findById(req.params.id);
 
     try {
-        if(recipe){
-            await Recipe.findByIdAndUpdate(req.params.id , req.body , {new:true});
-            res.json({title , ingredients , instructions , description});
+        if (recipe) {
+            // Update the recipe with the new values
+            const updatedRecipe = await Recipe.findByIdAndUpdate(
+                req.params.id,
+                {
+                    recipe_title,      // Using the correct field name
+                    ingredients,
+                    instructions,
+                    recipe_description // Using the correct field name
+                },
+                { new: true }
+            );
+            res.json(updatedRecipe); // Respond with the updated recipe
+        } else {
+            return res.status(404).json({ message: 'Recipe not found' });
         }
-
-
     } catch (error) {
-        return res.status(400).json(error.message);
+        return res.status(400).json({ message: error.message });
     }
+};
 
-}
 
 
 

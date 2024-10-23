@@ -11,7 +11,7 @@ app.use(express.json())
 
 app.use('/recipe' ,require("./routes/recipe"));
 app.use('/user' , require('./routes/user'));
-// app.use('/ingredients' , require('./routes/ingredients'));
+app.use('/ingredients' , require('./routes/ingredients'));
 
 
 app.listen(PORT , (err) =>{
