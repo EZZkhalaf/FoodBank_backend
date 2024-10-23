@@ -2,8 +2,11 @@ const express = require('express');
 const dotenv = require('dotenv').config();
 const connectdb = require('./Config/mongoConnect');
 const jwt = require('jsonwebtoken')
+const cors = require('cors');
 
 const app = express();
+app.use(cors())
+
 const PORT = process.env.PORT || 5000;
 connectdb();
 
