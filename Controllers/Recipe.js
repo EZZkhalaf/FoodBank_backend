@@ -105,7 +105,7 @@ const addRecipe = async (req, res) => {
     }
 };
 
-module.exports = addRecipe;
+
 
 
 const editRecipe = async (req, res) => {
