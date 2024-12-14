@@ -2,7 +2,8 @@
 const express = require('express');
 const Recipe = require("../model/recipe");
 const Ingredient = require('../model/ingredient');
-const User = require('../model/User')
+const User = require('../model/User');
+const ingredient = require('../model/ingredient');
 
 const getRecipes = async(req,res)=>{
     const recipes = await Recipe.find();
@@ -38,16 +39,13 @@ const getRecipe = async (req, res) => {
 //     }
 
 //     try {
-//         // Validate ingredient name and chack if they exist in the database 
-//         const validIngredients = await Ingredient.find({ '_id': { $in: ingredients } });
-//         if (validIngredients.length !== ingredients.length) {
-//             return res.status(400).json({ message: 'One or more ingredient IDs are invalid.' });
-//         }
+//         // Validate that all ingredient names exist in the Ingredient collection
+//         const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredients } });
+//         const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name);
 
-//         // Validate user ID
-//         const validUser = await User.findById(recipe_user);
-//         if (!validUser) {
-//             return res.status(400).json({ message: 'User ID is invalid.' });
+//         // Check if all provided ingredient names are valid
+//         if (validIngredientNames.length !== ingredients.length) {
+//             return res.status(400).json({ message: 'One or more ingredient names are invalid or do not exist.' });
 //         }
 
 //         // Create a new recipe
@@ -55,7 +53,7 @@ const getRecipe = async (req, res) => {
 //             recipe_title,
 //             recipe_description,
 //             instructions,
-//             ingredients,
+//             ingredients, // Store the valid ingredient names
 //             recipe_user,
 //             recipe_image
 //         });
@@ -68,7 +66,6 @@ const getRecipe = async (req, res) => {
 //     }
 // };
 
-
 const addRecipe = async (req, res) => {
     const { recipe_title, recipe_description, instructions, ingredients, recipe_user, recipe_image } = req.body;
 
@@ -78,12 +75,20 @@ const addRecipe = async (req, res) => {
     }
 
     try {
+        // Ensure ingredients are provided in the correct format
+        if (!Array.isArray(ingredients) || ingredients.some(ing => !ing.name)) {
+            return res.status(400).json({ message: 'Ingredients must be an array of objects with at least a "name" field.' });
+        }
+
+        // Extract ingredient names for validation
+        const ingredientNames = ingredients.map(ing => ing.name);
+
         // Validate that all ingredient names exist in the Ingredient collection
-        const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredients } });
+        const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredientNames } });
         const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name);
 
         // Check if all provided ingredient names are valid
-        if (validIngredientNames.length !== ingredients.length) {
+        if (validIngredientNames.length !== ingredientNames.length) {
             return res.status(400).json({ message: 'One or more ingredient names are invalid or do not exist.' });
         }
 
@@ -92,7 +97,7 @@ const addRecipe = async (req, res) => {
             recipe_title,
             recipe_description,
             instructions,
-            ingredients, // Store the valid ingredient names
+            ingredients, // Save the full array of objects
             recipe_user,
             recipe_image
         });
@@ -104,6 +109,7 @@ const addRecipe = async (req, res) => {
         return res.status(500).json({ message: 'Error creating recipe', error: error.message });
     }
 };
+
 
 
 
@@ -136,9 +142,67 @@ const editRecipe = async (req, res) => {
 
 
 
+// const searchRecipesByIngredients = async(req,res) =>{
+//     try{
+//         const {ingredients} = req.body;
+//     if (!ingredients || !Array.isArray(ingredients)){
+//         return res.status(400).json({ error : 'please enter the desired ingredients'});
+//     }
+
+//     const foundIngredients = await Ingredient.find({
+//         name : { $in : ingredients},
+//     });
+
+//     if(foundIngredients === 0){
+//         return res.status(404).json({ error: 'No matching ingredients found.' });
+//     }
+
+//     const ingredientId = foundIngredients.map((i) => i._id);
+
+//     //now find the recipes that contains the entered ingredients
+//     const recipes = await  Recipe.find({
+//         ingredients : {$all : ingredientId} //present all the founded ingredients 
+//     });
+//     if(recipes.length === 0){
+//         return res.status(400).json({message : 'no recipes found with these ingredients'})
+//     }
+    
+//     res.status(200).json(recipes);
+// }catch(error){
+//     console.log(error)
+//     return res.status(500).json({error : "error in the server"})
+// }
+
+// }
+const searchRecipesByIngredients = async (req, res) => {
+    const { ingredients } = req.body;
+  
+    if (!ingredients || ingredients.length === 0) {
+      return res.status(400).json({ message: 'Please provide ingredients to search for.' });
+    }
+  
+    try {
+      // Build the query for ingredients
+      const ingredientNames = ingredients.map(ingredient => ingredient.name);
+  
+      // Find recipes that contain all of the ingredients
+      const recipes = await Recipe.find({
+        'ingredients.name': { $all: ingredientNames }
+      });
+  
+      if (recipes.length === 0) {
+        return res.status(404).json({ message: 'No recipes found for the given ingredients.' });
+      }
+  
+      return res.status(200).json(recipes);
+    } catch (error) {
+      return res.status(500).json({ message: 'Error searching recipes', error: error.message });
+    }
+  };
+
 
 const deleteRecipe = (req,res)=>{
     res.json({message : 'this is delete recipe'})
 
 }
-module.exports = {getRecipes , getRecipe , addRecipe , editRecipe , deleteRecipe};
+module.exports = {getRecipes , getRecipe , addRecipe , editRecipe , deleteRecipe , searchRecipesByIngredients};

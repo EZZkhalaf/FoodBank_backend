@@ -1,87 +1,81 @@
 const Ingredient = require('../model/ingredient');
 
-const addIngredient = async (req, res) => {
-    const { ingredient_name, unit, ingredient_image } = req.body;
+// const addIngredient = async (req, res) => {
+//     const { ingredient_name, unit } = req.body;
 
-    // Ensure required fields are filled
-    if (!ingredient_name || !unit) {
-        return res.status(400).json({ message: "Please fill the required fields for the ingredient." });
-    }
+//     // Ensure required fields are filled
+//     if (!ingredient_name || !unit) {
+//         return res.status(400).json({ message: "Please fill the required fields for the ingredient." });
+//     }
 
-    try {
-        // Check for an existing ingredient by name (case-insensitive)
-        const existingIngredient = await Ingredient.findOne({ingredient_name});
-        if (existingIngredient) {
-            return res.status(400).json({ message: "Ingredient already exists!" });
-        }
+//     try {
+//         // Check for an existing ingredient by name (case-insensitive)
+//         const existingIngredient = await Ingredient.findOne({ingredient_name});
+//         if (existingIngredient) {
+//             return res.status(400).json({ message: "Ingredient already exists!" });
+//         }
 
       
         
 
-        // Create the new ingredient
-        const newIngredient = await Ingredient.create({
-            ingredient_name:ingredient_name,
-            unit,
-            ingredient_image
+//         // Create the new ingredient
+//         await Ingredient.create({
+//             ingredient_name:ingredient_name,
+//             unit
+//         });
+
+//         // Respond with the created ingredient details
+//         return res.status(201).json({message : 'ingredient added ....'});
+
+//     } catch (error) {
+//         // Return a detailed error message
+//         return res.status(500).json({ message: `Error: ${error.message}` });
+//     }
+// };
+
+
+
+const addIngredients = async (req, res) => {
+    const ingredients = req.body;
+
+    // Ensure the body contains an array and each ingredient has a name and unit
+    if (!Array.isArray(ingredients) || ingredients.some(ingredient => !ingredient.name || !ingredient.unit)) {
+        return res.status(400).json({ message: 'Each ingredient must have a "name" and a "unit".' });
+    }
+
+    try {
+        // Check for existing ingredients by ingredient_name
+        const existingIngredients = await Ingredient.find({
+            ingredient_name: { $in: ingredients.map(ing => ing.name) }
         });
 
-        // Respond with the created ingredient details
-        return res.status(201).json({message : 'ingredient added ....'});
+        // Extract existing ingredient names
+        const existingIngredientNames = existingIngredients.map(ing => ing.ingredient_name);
+
+        // Filter out ingredients that already exist
+        const newIngredients = ingredients.filter(ing => !existingIngredientNames.includes(ing.name));
+
+        // If there are new ingredients, insert them into the database
+        if (newIngredients.length > 0) {
+            const insertedIngredients = await Ingredient.insertMany(newIngredients.map(ing => ({
+                ingredient_name: ing.name, // Map name to ingredient_name
+                unit: ing.unit
+            })));
+            return res.status(201).json(insertedIngredients);
+        }
+
+        return res.status(400).json({ message: 'All ingredients already exist.' });
 
     } catch (error) {
-        // Return a detailed error message
         return res.status(500).json({ message: `Error: ${error.message}` });
     }
 };
 
-module.exports = addIngredient;
+module.exports = addIngredients;
 
 
 
 
 
-// const ingredient = require('../model/ingredient');
-
-
-// const addIngredient = async(req,res)=>{
-//     const {ingredient_name , unit  , ingredient_image} = req.body;
-//     if(!ingredient_name || !unit){
-//         return res.status(400).json("please fill the required fields for the ingredient");
-//     }
-
-   
-    
-//     try {
-//         //check for existing ingredient in the database 
-//         const existIngredient = await ingredient.findOne({ingredient_name});
-//         if(existIngredient){
-//             return res.status(400).json("ingredient already exist !!!");
-//         }
-        
-        
-//         //creating the ingredient
-//         const newIngredient =await ingredient.create({
-//             ingredient_name , 
-//             unit,
-//             ingredient_image
-//         })
-        
-
-//         return res.status(201).json({
-//             ingredient_name : newIngredient.ingredient_name,
-//             unit : newIngredient.unit,
-//             ingredient_image : newIngredient.ingredient_image
-//         });
-
-//     } catch (error) {
-//         res.status(400).json({message:'error in catch'});
-//     }
-
-
-
-
-// }
-
-// module.exports = addIngredient;
 
 

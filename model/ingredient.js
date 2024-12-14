@@ -11,11 +11,7 @@ const ingredientSchema = new mongoose.Schema({
         type: String, // E.g., "grams", "pieces", "ml", etc.
         required: true,
     },
-    ingredient_image:{
-        type:String,
-        required : false,
-        trim:true //remove white spaces
-    }
+    
 }, { timestamps: true });
 
 
