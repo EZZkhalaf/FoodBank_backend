@@ -36,7 +36,7 @@ const Ingredient = require('../model/ingredient');
 
 
 const addIngredients = async (req, res) => {
-    const ingredients = req.body;
+    const { ingredients } = req.body;
 
     // Ensure the body contains an array and each ingredient has a name and unit
     if (!Array.isArray(ingredients) || ingredients.some(ingredient => !ingredient.name || !ingredient.unit)) {
@@ -44,21 +44,23 @@ const addIngredients = async (req, res) => {
     }
 
     try {
-        // Check for existing ingredients by ingredient_name
+        // Check for existing ingredients by ingredient_name (case insensitive)
         const existingIngredients = await Ingredient.find({
-            ingredient_name: { $in: ingredients.map(ing => ing.name) }
+            ingredient_name: { 
+                $in: ingredients.map(ing => ing.name.toLowerCase()) // Use lowercase for comparison
+            }
         });
 
-        // Extract existing ingredient names
-        const existingIngredientNames = existingIngredients.map(ing => ing.ingredient_name);
+        // Extract existing ingredient names and ensure they are case-insensitive
+        const existingIngredientNames = existingIngredients.map(ing => ing.ingredient_name.toLowerCase());
 
         // Filter out ingredients that already exist
-        const newIngredients = ingredients.filter(ing => !existingIngredientNames.includes(ing.name));
+        const newIngredients = ingredients.filter(ing => !existingIngredientNames.includes(ing.name.toLowerCase()));
 
         // If there are new ingredients, insert them into the database
         if (newIngredients.length > 0) {
             const insertedIngredients = await Ingredient.insertMany(newIngredients.map(ing => ({
-                ingredient_name: ing.name, // Map name to ingredient_name
+                ingredient_name: ing.name.toLowerCase(), // Ensure case consistency
                 unit: ing.unit
             })));
             return res.status(201).json(insertedIngredients);
@@ -70,6 +72,7 @@ const addIngredients = async (req, res) => {
         return res.status(500).json({ message: `Error: ${error.message}` });
     }
 };
+
 
 module.exports = addIngredients;
 

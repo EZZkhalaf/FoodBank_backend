@@ -10,6 +10,32 @@ const getAllUsers = async(req,res) =>{
 
 
 
+
+const searchUser = async(req,res) =>{
+    const {username} = req.body;
+
+    if(!username){
+        return res.status(400).json('enter username .');
+    }
+    
+    try{
+        const users = await User.find({username : {$regex : username , $options: 'i'}});//this statement to find the users whom contain the search name or a part of it 
+        if(!users || users.length === 0 ){
+            return res.status(404).json('no users found');
+        }
+
+        return res.status(200).json(users);
+
+    }catch(err){
+        return res.status(500).json({message: 'server error' , error : err});
+    }
+
+
+
+
+}
+
+
 const CreateUser = async (req,res)=>{
     const {username , email , password , ConfirmPass} = req.body;
     if(!username || !email || !password || !ConfirmPass){
@@ -81,4 +107,34 @@ const loginUser = async(req,res)=>{
 }
 
 
-module.exports = {getAllUsers , CreateUser , loginUser};
+const followUser = async(req,res)=>{
+    const {currentuserid , followinguserid} = req.body;
+    try{
+        const currentuser = await User.findById(currentuserid);
+        const followingUser = await User.findById(followinguserid);
+        
+        if(!currentuser ){
+            return res.status(404).json('no current user please log in')
+        }
+        if(!followingUser){
+            return res.status(404).json('user not found')
+        }
+        
+        
+        if(currentuser.following.includes(followinguserid)){
+            return res.status(409).json('user already added ')
+        }
+
+        currentuser.following.push(followinguserid);
+        followingUser.followers.push(currentuserid);
+        await currentuser.save();
+        await followingUser.save();
+
+        return res.status(200).json('user added successfully')
+
+    }catch(err){
+        return res.status(500).json({message:"server error " , error :err})
+    }
+}
+
+module.exports = {getAllUsers , CreateUser , loginUser , searchUser , followUser};

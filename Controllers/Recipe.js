@@ -30,21 +30,30 @@ const getRecipe = async (req, res) => {
 
 
 
+
 // const addRecipe = async (req, res) => {
-//     const { recipe_title, recipe_description, instructions, ingredients, recipe_user, recipe_image } = req.body;
+//     const { recipe_title, recipe_description, instructions, ingredients, recipe_user, recipe_image ,type} = req.body;
 
 //     // Check for required fields
-//     if (!recipe_title || !instructions || !ingredients || !recipe_user) {
+//     if (!recipe_title || !instructions || !ingredients || !recipe_user || !type) {
 //         return res.status(400).json({ message: 'Required fields are empty ...' });
 //     }
 
 //     try {
+//         // Ensure ingredients are provided in the correct format
+//         if (!Array.isArray(ingredients) || ingredients.some(ing => !ing.name)) {
+//             return res.status(400).json({ message: 'Ingredients must be an array of objects with at least a "name" field.' });
+//         }
+
+//         // Extract ingredient names for validation
+//         const ingredientNames = ingredients.map(ing => ing.name);
+
 //         // Validate that all ingredient names exist in the Ingredient collection
-//         const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredients } });
+//         const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredientNames } });
 //         const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name);
 
 //         // Check if all provided ingredient names are valid
-//         if (validIngredientNames.length !== ingredients.length) {
+//         if (validIngredientNames.length !== ingredientNames.length) {
 //             return res.status(400).json({ message: 'One or more ingredient names are invalid or do not exist.' });
 //         }
 
@@ -53,9 +62,10 @@ const getRecipe = async (req, res) => {
 //             recipe_title,
 //             recipe_description,
 //             instructions,
-//             ingredients, // Store the valid ingredient names
+//             ingredients, // Save the full array of objects
 //             recipe_user,
-//             recipe_image
+//             recipe_image,
+//             type
 //         });
 
 //         // Respond with the created recipe
@@ -66,31 +76,54 @@ const getRecipe = async (req, res) => {
 //     }
 // };
 
+
+
 const addRecipe = async (req, res) => {
-    const { recipe_title, recipe_description, instructions, ingredients, recipe_user, recipe_image } = req.body;
+    const { recipe_title, recipe_description, instructions, ingredients, recipe_user, recipe_image, type } = req.body;
 
     // Check for required fields
-    if (!recipe_title || !instructions || !ingredients || !recipe_user) {
+    if (!recipe_title || !instructions || !ingredients || !recipe_user || !type) {
         return res.status(400).json({ message: 'Required fields are empty ...' });
     }
 
     try {
+
+        const user = await User.findById(recipe_user);
+
+        if (!user) {
+            return res.status(400).json({ message: 'The user does not exist.' });
+        }
+
+
         // Ensure ingredients are provided in the correct format
-        if (!Array.isArray(ingredients) || ingredients.some(ing => !ing.name)) {
-            return res.status(400).json({ message: 'Ingredients must be an array of objects with at least a "name" field.' });
+        if (!Array.isArray(ingredients) || ingredients.some(ing => !ing.name || !ing.quantity)) {
+            return res.status(400).json({ message: 'Ingredients must be an array of objects with at least "name" and "quantity" fields.' });
         }
 
         // Extract ingredient names for validation
         const ingredientNames = ingredients.map(ing => ing.name);
 
         // Validate that all ingredient names exist in the Ingredient collection
-        const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredientNames } });
-        const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name);
+        // const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredientNames } });
+        // const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name);
 
-        // Check if all provided ingredient names are valid
-        if (validIngredientNames.length !== ingredientNames.length) {
-            return res.status(400).json({ message: 'One or more ingredient names are invalid or do not exist.' });
-        }
+        // // Check if all provided ingredient names are valid
+        // if (validIngredientNames.length !== ingredientNames.length) {
+        //     return res.status(400).json({ message: 'One or more ingredient names are invalid or do not exist.' });
+        // }
+
+        // Validate that all ingredient names exist in the Ingredient collection
+            const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredientNames } });
+            const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name.toLowerCase());
+
+            // Find invalid ingredient names
+            const invalidIngredients = ingredientNames.filter(name => !validIngredientNames.includes(name.toLowerCase()));
+
+            // If there are invalid ingredients, return an error with the missing ingredients
+            if (invalidIngredients.length > 0) {
+                return res.status(400).json({ message: `The following ingredient(s) are invalid or do not exist: ${invalidIngredients.join(', ')}` });
+            }
+
 
         // Create a new recipe
         const newRecipe = await Recipe.create({
@@ -99,7 +132,8 @@ const addRecipe = async (req, res) => {
             instructions,
             ingredients, // Save the full array of objects
             recipe_user,
-            recipe_image
+            recipe_image,
+            type
         });
 
         // Respond with the created recipe
@@ -142,38 +176,6 @@ const editRecipe = async (req, res) => {
 
 
 
-// const searchRecipesByIngredients = async(req,res) =>{
-//     try{
-//         const {ingredients} = req.body;
-//     if (!ingredients || !Array.isArray(ingredients)){
-//         return res.status(400).json({ error : 'please enter the desired ingredients'});
-//     }
-
-//     const foundIngredients = await Ingredient.find({
-//         name : { $in : ingredients},
-//     });
-
-//     if(foundIngredients === 0){
-//         return res.status(404).json({ error: 'No matching ingredients found.' });
-//     }
-
-//     const ingredientId = foundIngredients.map((i) => i._id);
-
-//     //now find the recipes that contains the entered ingredients
-//     const recipes = await  Recipe.find({
-//         ingredients : {$all : ingredientId} //present all the founded ingredients 
-//     });
-//     if(recipes.length === 0){
-//         return res.status(400).json({message : 'no recipes found with these ingredients'})
-//     }
-    
-//     res.status(200).json(recipes);
-// }catch(error){
-//     console.log(error)
-//     return res.status(500).json({error : "error in the server"})
-// }
-
-// }
 const searchRecipesByIngredients = async (req, res) => {
     const { ingredients } = req.body;
   

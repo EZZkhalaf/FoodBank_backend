@@ -44,3 +44,5 @@ app.listen(PORT , (err) =>{
 // |   └──DELETE /users/:id - Delete user account(not added yet)
 // |   └──POST /users/:id/shopping-list - Add ingredients to a shopping list(ot added yet)
 
+
+//will be added search by user name 
