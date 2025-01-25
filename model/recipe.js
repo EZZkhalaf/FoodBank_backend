@@ -40,7 +40,11 @@ const recipeSchema = new mongoose.Schema({
     type:{
         type:String , 
         required : true 
-    }
+    },
+    Bookmarks:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'User'
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Recipe', recipeSchema);

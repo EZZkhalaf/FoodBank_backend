@@ -22,6 +22,8 @@ app.listen(PORT , (err) =>{
 })
 
 
+module.exports = app;
+
 // /api
 // ├── /ingredients
 // │   ├── POST /           - Add ingredients entered by the user

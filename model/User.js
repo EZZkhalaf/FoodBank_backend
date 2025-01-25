@@ -1,5 +1,6 @@
 const mongo = require("mongoose");
 
+
 const userSchema = new mongo.Schema(
     {
         username: {
@@ -18,12 +19,6 @@ const userSchema = new mongo.Schema(
             type: String,
             required: true,
         },
-        favorites: [
-            {
-                type: mongo.Schema.Types.ObjectId,
-                ref: "Recipe",
-            },
-        ],
         friends: [
             {
                 type: mongo.Schema.Types.ObjectId,
@@ -40,6 +35,18 @@ const userSchema = new mongo.Schema(
             {
                 type: mongo.Schema.Types.ObjectId,
                 ref: "User", // Refers to users this user is following
+            },
+        ],
+        ownRecipes : [
+            {
+                type:mongo.Schema.Types.ObjectId ,
+                ref:'Recipe'
+            }
+        ],
+        savedRecipes: [
+            {
+                type: mongo.Schema.Types.ObjectId,
+                ref: "Recipe",
             },
         ],
     },

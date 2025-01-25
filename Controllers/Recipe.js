@@ -28,56 +28,6 @@ const getRecipe = async (req, res) => {
 };
 
 
-
-
-
-// const addRecipe = async (req, res) => {
-//     const { recipe_title, recipe_description, instructions, ingredients, recipe_user, recipe_image ,type} = req.body;
-
-//     // Check for required fields
-//     if (!recipe_title || !instructions || !ingredients || !recipe_user || !type) {
-//         return res.status(400).json({ message: 'Required fields are empty ...' });
-//     }
-
-//     try {
-//         // Ensure ingredients are provided in the correct format
-//         if (!Array.isArray(ingredients) || ingredients.some(ing => !ing.name)) {
-//             return res.status(400).json({ message: 'Ingredients must be an array of objects with at least a "name" field.' });
-//         }
-
-//         // Extract ingredient names for validation
-//         const ingredientNames = ingredients.map(ing => ing.name);
-
-//         // Validate that all ingredient names exist in the Ingredient collection
-//         const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredientNames } });
-//         const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name);
-
-//         // Check if all provided ingredient names are valid
-//         if (validIngredientNames.length !== ingredientNames.length) {
-//             return res.status(400).json({ message: 'One or more ingredient names are invalid or do not exist.' });
-//         }
-
-//         // Create a new recipe
-//         const newRecipe = await Recipe.create({
-//             recipe_title,
-//             recipe_description,
-//             instructions,
-//             ingredients, // Save the full array of objects
-//             recipe_user,
-//             recipe_image,
-//             type
-//         });
-
-//         // Respond with the created recipe
-//         return res.status(201).json(newRecipe);
-//     } catch (error) {
-//         // Handle any errors that occur during creation
-//         return res.status(500).json({ message: 'Error creating recipe', error: error.message });
-//     }
-// };
-
-
-
 const addRecipe = async (req, res) => {
     const { recipe_title, recipe_description, instructions, ingredients, recipe_user, recipe_image, type } = req.body;
 
@@ -87,7 +37,7 @@ const addRecipe = async (req, res) => {
     }
 
     try {
-
+        //check for the user if logged it or not
         const user = await User.findById(recipe_user);
 
         if (!user) {
@@ -95,24 +45,30 @@ const addRecipe = async (req, res) => {
         }
 
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // check if the recipe already in the user's collection (will add the ingredients check later )
+        const recipe_exist = await Recipe.findOne({
+            recipe_title : {$eq : recipe_title},
+            _id : {$in : user.ownRecipes} 
+        })
+        if(recipe_exist){
+            return res.status(400).json({ message: 'recipe with the same title already exists for this user' });
+        }
+        
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
         // Ensure ingredients are provided in the correct format
         if (!Array.isArray(ingredients) || ingredients.some(ing => !ing.name || !ing.quantity)) {
             return res.status(400).json({ message: 'Ingredients must be an array of objects with at least "name" and "quantity" fields.' });
         }
-
+        
         // Extract ingredient names for validation
         const ingredientNames = ingredients.map(ing => ing.name);
 
-        // Validate that all ingredient names exist in the Ingredient collection
-        // const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredientNames } });
-        // const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name);
-
-        // // Check if all provided ingredient names are valid
-        // if (validIngredientNames.length !== ingredientNames.length) {
-        //     return res.status(400).json({ message: 'One or more ingredient names are invalid or do not exist.' });
-        // }
-
-        // Validate that all ingredient names exist in the Ingredient collection
+        // checking if the ingredients exist
             const validIngredients = await Ingredient.find({ ingredient_name: { $in: ingredientNames } });
             const validIngredientNames = validIngredients.map(ingredient => ingredient.ingredient_name.toLowerCase());
 
@@ -124,7 +80,7 @@ const addRecipe = async (req, res) => {
                 return res.status(400).json({ message: `The following ingredient(s) are invalid or do not exist: ${invalidIngredients.join(', ')}` });
             }
 
-
+            
         // Create a new recipe
         const newRecipe = await Recipe.create({
             recipe_title,
@@ -136,16 +92,15 @@ const addRecipe = async (req, res) => {
             type
         });
 
-        // Respond with the created recipe
-        return res.status(201).json(newRecipe);
+        user.ownRecipes.push(newRecipe._id);
+        await user.save();
+
+        return res.status(201).json('recipe created sucessfully...');
     } catch (error) {
         // Handle any errors that occur during creation
         return res.status(500).json({ message: 'Error creating recipe', error: error.message });
     }
 };
-
-
-
 
 
 const editRecipe = async (req, res) => {
@@ -161,7 +116,7 @@ const editRecipe = async (req, res) => {
                     recipe_title,      // Using the correct field name
                     ingredients,
                     instructions,
-                    recipe_description // Using the correct field name
+                    recipe_description 
                 },
                 { new: true }
             );
@@ -203,8 +158,29 @@ const searchRecipesByIngredients = async (req, res) => {
   };
 
 
-const deleteRecipe = (req,res)=>{
-    res.json({message : 'this is delete recipe'})
+const deleteRecipe = async(req,res)=>{
+    const {recipeid} = req.body ; 
 
+    if(!recipeid){
+        return res.status(500).json('fill the required field');
+    }
+
+    try{
+        const deleteRecipe = await Recipe.findById(recipeid);
+
+        if(!deleteRecipe){
+            return res.status(404).json('recipe dont exist');
+
+        }
+
+        await Recipe.findByIdAndDelete(recipeid);
+        return res.status(200).json('successfully deleted ...')
+
+
+    }catch(err){
+        return res.status(500).json({ message: 'Error deleting recipe', error: error.message });
+    }
 }
-module.exports = {getRecipes , getRecipe , addRecipe , editRecipe , deleteRecipe , searchRecipesByIngredients};
+module.exports = {getRecipes , getRecipe , addRecipe 
+    , editRecipe , deleteRecipe , searchRecipesByIngredients 
+    , deleteRecipe};
