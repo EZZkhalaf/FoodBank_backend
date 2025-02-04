@@ -5,12 +5,17 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
 const Recipe = require('../model/recipe')
 const {deleteRecipe} = require('../Controllers/Recipe')
+const {generateTokenAndSetCookie} = require('../lib/utils/gentoken.js')
 
 const getAllUsers = async(req,res) =>{
    return  res.json({message:"get all users"})
 }
 
 
+
+const editProfile = async(req,res)=>{
+    //to be continued
+}
 
 const searchUser = async(req,res) =>{
     const {username} = req.body;
@@ -46,6 +51,18 @@ const CreateUser = async (req,res)=>{
 
 
     try {
+        const existing_email = await User.findOne({email});
+        if (existing_email){
+            return res.status(500).json('email already registered ')
+        }
+        
+
+        const existing_username = await User.findOne({username});
+        if(existing_username){
+            return res.status(500).json('user name already taken  ')
+
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
@@ -54,12 +71,11 @@ const CreateUser = async (req,res)=>{
             password:hashedPassword
         })
 
+        generateTokenAndSetCookie(newUser._id , res);//generating the cookies for every new user
 
-        //respond with the created user 
-        return res.status(201).json({
-            user_id: newUser._id,
-            user_name: newUser.user_name,
-            email: newUser.email,
+        
+        return res.json({
+            message: 'Register successful!',
         });
 
 
@@ -71,34 +87,73 @@ const CreateUser = async (req,res)=>{
 
 
 
-const loginUser = async(req,res)=>{
-    const {email , password} = req.body;
-
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+    
+    if (email === '' || password.length === 0) {
+        return res.status(500).json({ message: 'Please fill the required fields' });
+    }
 
     try {
-        
-        const login_user = await User.findOne({email});
-        
+        // Find user by email and populate related data
+        const login_user = await User.findOne({ email })
+            .populate('friends')
+            .populate('followers')
+            .populate('following')
+            .populate('ownRecipes')
+            .populate('savedRecipes');
+
         if (!login_user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        const isMatch = await bcrypt.compare(password , login_user.password);
+        // Check password
+        const isMatch = await bcrypt.compare(password, login_user.password);
 
-        if(!isMatch){
-            return res.status(401).json({ message: "Invalid password" });
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid password' });
         }
 
-
-        
-        //will add jwt later 
+        // Generate JWT token
         const token = jwt.sign({ id: login_user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        // Return success response with token
-        return res.json('login working ');
+
+        console.log('Profile Pic in Backend:', login_user.profilePic);
+
+        // Return success response with user data and token
+        return res.json({
+            message: 'Login successful!',
+            token,
+            user: {
+              _id: login_user._id,
+              username: login_user.username,
+              email: login_user.email,
+              friends: login_user.friends,
+              followers: login_user.followers,
+              following: login_user.following,
+              ownRecipes: login_user.ownRecipes,
+              savedRecipes: login_user.savedRecipes,
+              bio: login_user.bio,
+              profilePic: login_user.profilePic,  // Ensure this field is sent
+              createdAt: login_user.createdAt,
+              updatedAt: login_user.updatedAt,
+            },
+          });
+          
 
     } catch (error) {
-        return res.status(400).json(error.message)
+        return res.status(400).json({ message: error.message });
+    }
+};
+
+
+
+const logout = async(req,res)=>{
+    try {
+        res.cookie("jwt" , "" , {maxAge : 0 });
+        return res.status(200).json("logged out seccessfully")
+    } catch (error) {
+        return res.status(500).json({Error:err})
     }
 }
 
@@ -221,4 +276,6 @@ const deleteOwnRecipe = async(req,res)=>{
     }
 }
 
-module.exports = {getAllUsers , CreateUser , loginUser , searchUser , followUser , saveRecipe , unsaveRecipe,deleteOwnRecipe};
+module.exports = {getAllUsers , CreateUser , 
+    loginUser , searchUser , followUser , saveRecipe ,
+    unsaveRecipe,deleteOwnRecipe , logout};

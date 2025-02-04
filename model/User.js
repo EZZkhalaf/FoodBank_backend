@@ -1,6 +1,5 @@
 const mongo = require("mongoose");
 
-
 const userSchema = new mongo.Schema(
     {
         username: {
@@ -22,26 +21,26 @@ const userSchema = new mongo.Schema(
         friends: [
             {
                 type: mongo.Schema.Types.ObjectId,
-                ref: "User", // Refers to other users in the same collection
+                ref: "User",
             },
         ],
         followers: [
             {
                 type: mongo.Schema.Types.ObjectId,
-                ref: "User", // Refers to users who follow this user
+                ref: "User",
             },
         ],
         following: [
             {
                 type: mongo.Schema.Types.ObjectId,
-                ref: "User", // Refers to users this user is following
+                ref: "User",
             },
         ],
-        ownRecipes : [
+        ownRecipes: [
             {
-                type:mongo.Schema.Types.ObjectId ,
-                ref:'Recipe'
-            }
+                type: mongo.Schema.Types.ObjectId,
+                ref: "Recipe",
+            },
         ],
         savedRecipes: [
             {
@@ -49,6 +48,14 @@ const userSchema = new mongo.Schema(
                 ref: "Recipe",
             },
         ],
+        bio: {
+            type: String,
+            default: "New to the app",
+        },
+        profilePic: {
+            type: String,
+            default: "/assets/defaultPhoto.png", // Make sure this path is correct
+        },
     },
     { timestamps: true }
 );
