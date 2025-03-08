@@ -17,6 +17,8 @@ const editProfile = async(req,res)=>{
     //to be continued
 }
 
+
+
 const searchUser = async(req,res) =>{
     const {username} = req.body;
 
@@ -34,6 +36,23 @@ const searchUser = async(req,res) =>{
         return res.status(200).json(users);
 
     }catch(err){
+        return res.status(500).json({message: 'server error' , error : err});
+    }
+}
+
+
+const getUserById = async(req,res)=>{
+    const {userId} = req.body;
+    if(!userId){
+        return res.status(404).json('user not found');
+    }
+    try {
+        const user = await User.findById(userId);
+        if(!user || user.length === 0 ){
+            return res.status(404).json('user not found for this recipe');
+        }
+        return res.status(200).json(user);
+    } catch (err) {
         return res.status(500).json({message: 'server error' , error : err});
     }
 }
@@ -118,7 +137,7 @@ const loginUser = async (req, res) => {
         const token = jwt.sign({ id: login_user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
 
-        console.log('Profile Pic in Backend:', login_user.profilePic);
+        // console.log('Profile Pic in Backend:', login_user.profilePic);
 
         // Return success response with user data and token
         return res.json({
@@ -189,8 +208,42 @@ const followUser = async(req,res)=>{
 }
 
 
+const checkSaved = async(req,res)=>{ //this controller for checking if the user already bookmarked the recipe or no (for frontend part)
+    const {recipeId , userId} = req.body;
+        
+    
+    
+    try {
+        const recipe77 = await Recipe.findById(recipeId);
+        const currentUser = await User.findById(userId);
+        
+        //check if they exist
+        if (!currentUser) return res.status(404).json({ message: 'user not found' });
+        if (!recipe77) res.status(500).json('error in finding recipe to save');
+        const existingRecipe =  currentUser.savedRecipes.some(recipe => recipe._id.equals(recipeId))
 
+        if(existingRecipe) return res.status(200).json('saved')
+        console.log(existingRecipe)
+        if(!existingRecipe) return res.status(200).json('not saved')
+    } catch (error) {
+        return res.status(500).json({message:'server error' , error:err});
+    }
 
+}
+
+const getSavedRecipes = async(req,res)=>{
+    const {userid} = req.params;
+    if(!userid) return res.status(500).json('no user found!');
+    try {
+        const currentUser = await User.findById(userid);
+        if(!currentUser) return res.status(404).json('no user found with this id ');
+        
+        return res.status(200).json(currentUser.savedRecipes);
+    
+    } catch (error) {
+        throw new Error({error:error})
+    }
+}
 
 const unsaveRecipe = async(req,res)=>{
     const { currentUserid, RecipeId } = req.body;
@@ -212,6 +265,7 @@ const unsaveRecipe = async(req,res)=>{
         }
 
         return res.status(200).json({ message: 'Recipe removed from saved recipes successfully.' });
+        
     } catch (error) {
         return res.status(500).json({ message: 'Error removing recipe', error: error.message });
     }
@@ -239,7 +293,7 @@ const saveRecipe = async(req,res) =>{
 
         recipe77.Bookmarks.push(currentUserid);
         await recipe77.save();
-        console.log('test')
+        // console.log('test')
 
         return res.status(200).json({message:'added to bookmarks'})
 
@@ -278,4 +332,5 @@ const deleteOwnRecipe = async(req,res)=>{
 
 module.exports = {getAllUsers , CreateUser , 
     loginUser , searchUser , followUser , saveRecipe ,
-    unsaveRecipe,deleteOwnRecipe , logout};
+    unsaveRecipe,deleteOwnRecipe , logout, getUserById,
+    checkSaved , getSavedRecipes};

@@ -12,10 +12,33 @@ const getRecipes = async(req,res)=>{
 
 }
 
+// const getRecipe = async (req, res) => {
+//     try {
+//         // Find the recipe by ID
+//         const recipe = await Recipe.findById(req.params.id);
+//         console.log('testing')
+//         if (!recipe) {
+//             return res.status(404).json({ message: 'Recipe not found' });
+//         }
+
+//         return res.status(200).json(recipe);
+//     } catch (error) {
+//         // Handle any errors that occur during the query
+//         return res.status(500).json({ message: 'Error retrieving recipe', error: error.message });
+//     }
+// };
+
 const getRecipe = async (req, res) => {
     try {
+        const { id } = req.params;
+
+        // Validate MongoDB ObjectId before querying
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid recipe ID format' });
+        }
+
         // Find the recipe by ID
-        const recipe = await Recipe.findById(req.params.id);
+        const recipe = await Recipe.findById(id);
 
         if (!recipe) {
             return res.status(404).json({ message: 'Recipe not found' });
@@ -23,7 +46,7 @@ const getRecipe = async (req, res) => {
 
         return res.status(200).json(recipe);
     } catch (error) {
-        // Handle any errors that occur during the query
+        console.error('Error retrieving recipe:', error);
         return res.status(500).json({ message: 'Error retrieving recipe', error: error.message });
     }
 };
@@ -33,14 +56,14 @@ const getRecipe = async (req, res) => {
 
 
 const getUserRecipes = async (req, res) => {
+    const userId = req.params.userid;
     try {
-        const userId = req.params.userid;
-        console.log('Request Params:', req.params.userid);
+        // console.log('Request Params:', req.params.userid);
       
       if (!userId) {
           return res.status(400).json({ message: "User ID is missing" });
         }
-        console.log('testing')
+        // console.log('testing')
   
 
       // Validate MongoDB ObjectId
@@ -48,7 +71,7 @@ const getUserRecipes = async (req, res) => {
         return res.status(400).json({ message: "Invalid user ID format" });
       }
   
-      console.log('User ID validated:', userId);
+    //   console.log('User ID validated:', userId);
   
       // Query the user and fetch their recipes
       const user = await User.findById(userId);
