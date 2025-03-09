@@ -223,7 +223,7 @@ const checkSaved = async(req,res)=>{ //this controller for checking if the user 
         const existingRecipe =  currentUser.savedRecipes.some(recipe => recipe._id.equals(recipeId))
 
         if(existingRecipe) return res.status(200).json('saved')
-        console.log(existingRecipe)
+        // console.log(existingRecipe)
         if(!existingRecipe) return res.status(200).json('not saved')
     } catch (error) {
         return res.status(500).json({message:'server error' , error:err});
@@ -334,3 +334,4 @@ module.exports = {getAllUsers , CreateUser ,
     loginUser , searchUser , followUser , saveRecipe ,
     unsaveRecipe,deleteOwnRecipe , logout, getUserById,
     checkSaved , getSavedRecipes};
+

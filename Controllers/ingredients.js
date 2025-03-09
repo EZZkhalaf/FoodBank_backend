@@ -1,45 +1,6 @@
+const ingredient = require('../model/ingredient');
 const Ingredient = require('../model/ingredient');
-
-
-
-
-// const addIngredients = async (req, res) => {
-//     const { ingredients } = req.body;
-
-//     // Ensure the body contains an array and each ingredient has a name and unit
-//     if (!Array.isArray(ingredients) || ingredients.some(ingredient => !ingredient.name || !ingredient.unit)) {
-//         return res.status(400).json({ message: 'Each ingredient must have a "name" and a "unit".' });
-//     }
-
-//     try {
-//         // Check for existing ingredients by ingredient_name (case insensitive)
-//         const existingIngredients = await Ingredient.find({
-//             ingredient_name: { 
-//                 $in: ingredients.map(ing => ing.name.toLowerCase()) // Use lowercase for comparison
-//             }
-//         }).collation({locale : 'en' , strength:2})
-
-//         // Extract existing ingredient names and ensure they are case-insensitive
-//         const existingIngredientNames = existingIngredients.map(ing => ing.ingredient_name.toLowerCase());
-
-//         // Filter out ingredients that already exist
-//         const newIngredients = ingredients.filter(ing => !existingIngredientNames.includes(ing.name.toLowerCase()));
-
-//         // If there are new ingredients, insert them into the database
-//         if (newIngredients.length > 0) {
-//             const insertedIngredients = await Ingredient.insertMany(newIngredients.map(ing => ({
-//                 ingredient_name: ing.name.toLowerCase(), // Ensure case consistency
-//                 unit: ing.unit
-//             })));
-//             return res.status(201).json(insertedIngredients);
-//         }
-
-//         return res.status(400).json({ message: 'All ingredients already exist.' });
-
-//     } catch (error) {
-//         return res.status(500).json({ message: `Error: ${error.message}` });
-//     }
-// };
+const { options } = require('../routes/user');
 
 
 
@@ -84,7 +45,41 @@ const addIngredients = async (req, res) => {
 };
 
 
-module.exports = addIngredients;
+
+
+const searchIngredient = async(req,res)=>{
+    const {ingredient_name} = req.body;
+
+    if(!ingredient_name)  return res.status(400).json('no ingredient provided !');
+    try { 
+        const foundIngredients =await Ingredient.find({ingredient_name : {$regex : ingredient_name , $options:'i'}});
+        if(!foundIngredients){
+            return res.status(404).json('no ingredients found ')
+            console.log('no ing fownd')
+        }
+        return res.status(200).json(foundIngredients)
+        
+    } catch (error) {
+        return res.status(500).json(error)
+    }
+    
+
+
+}
+
+
+const getFirst30 = async (req,res)=>{
+    try {
+        const ingredients = await ingredient.find().limit(20);
+        return res.status(200).json(ingredients);
+        
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving ingredients'});
+    }
+}
+
+
+module.exports = {addIngredients , searchIngredient , getFirst30};
 
 
 

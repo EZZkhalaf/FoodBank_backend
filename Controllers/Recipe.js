@@ -8,25 +8,11 @@ const mongoose = require('mongoose');
 
 const getRecipes = async(req,res)=>{
     const recipes = await Recipe.find();
-    return res.json(recipes);
+    return res.status(200).json(recipes);
 
 }
 
-// const getRecipe = async (req, res) => {
-//     try {
-//         // Find the recipe by ID
-//         const recipe = await Recipe.findById(req.params.id);
-//         console.log('testing')
-//         if (!recipe) {
-//             return res.status(404).json({ message: 'Recipe not found' });
-//         }
 
-//         return res.status(200).json(recipe);
-//     } catch (error) {
-//         // Handle any errors that occur during the query
-//         return res.status(500).json({ message: 'Error retrieving recipe', error: error.message });
-//     }
-// };
 
 const getRecipe = async (req, res) => {
     try {

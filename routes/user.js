@@ -18,7 +18,7 @@ router.post('/register' , CreateUser);
 router.post('/login' , loginUser);
 router.get('/logout' , logout);
 
-router.get('/search' , searchUser);
+router.post('/search' , searchUser);
 router.post('/getUserById' , getUserById)
 router.post('/follow' , followUser);
 
