@@ -179,18 +179,24 @@ const editRecipe = async (req, res) => {
 const searchRecipesByIngredients = async (req, res) => {
     const { ingredients } = req.body;
   
-    if (!ingredients || ingredients.length === 0) {
-      return res.status(400).json({ message: 'Please provide ingredients to search for.' });
+    // Ensure the ingredients array is valid
+    if (!Array.isArray(ingredients) || ingredients.length === 0) {
+      return res.status(400).json({ message: 'Please provide a valid list of ingredients to search for.' });
     }
   
     try {
-      // Build the query for ingredients
-      const ingredientNames = ingredients.map(ingredient => ingredient.name);
+      // Extract the ingredient names from the request body
+      const ingredientNames = ingredients.map(ingredient => ingredient.ingredient_name).filter(Boolean);
   
-      // Find recipes that contain all of the ingredients
+      // Ensure the ingredient names are valid (non-empty)
+      if (ingredientNames.length === 0) {
+        return res.status(400).json({ message: 'Ingredient names cannot be empty.' });
+      }
+  
+      // Find recipes that match any of the ingredients
       const recipes = await Recipe.find({
-        'ingredients.name': { $all: ingredientNames }
-      });
+        'ingredients.name': { $in: ingredientNames }
+      }).lean(); // Optimize query by using .lean()
   
       if (recipes.length === 0) {
         return res.status(404).json({ message: 'No recipes found for the given ingredients.' });
@@ -198,9 +204,11 @@ const searchRecipesByIngredients = async (req, res) => {
   
       return res.status(200).json(recipes);
     } catch (error) {
+      console.error('Error searching recipes:', error);
       return res.status(500).json({ message: 'Error searching recipes', error: error.message });
     }
   };
+  
 
 
 const deleteAllRecipes = async(req,res) =>{
