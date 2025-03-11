@@ -1,6 +1,6 @@
 const express = require('express');
 const { getRecipes , getRecipe, editRecipe, addRecipe, deleteRecipe
-     , searchRecipesByIngredients ,deleteAllRecipes , getUserRecipes} = require('../Controllers/Recipe');
+     , searchRecipesByIngredients ,deleteAllRecipes , getUserRecipes ,searchRecipeByName} = require('../Controllers/Recipe');
 const router = express.Router();
 
 
@@ -11,10 +11,14 @@ router.get('/' ,getRecipes)//all recipe
 
 router.post('/' ,addRecipe)
 
-router.get('/:id' ,getRecipe) //search recipe by name
+router.get('/:id' ,getRecipe) //search recipe by name(a single recipe )
+
+
+router.post('/searchRecipeByName' , searchRecipeByName);//for the search box for the other users recipes
+
+router.post('/search' , searchRecipesByIngredients);//search using ingredients
 
 router.get('/getUserRecipes/:userid' ,getUserRecipes) //search recipe by name
-
 
 router.put('/:id' ,editRecipe)//edit the recipe
 
@@ -22,7 +26,6 @@ router.delete('/' ,deleteRecipe)//delete the recipe
 
 router.delete('/all' ,deleteAllRecipes)//delete all recipes
 
-router.post('/search' , searchRecipesByIngredients);//search using ingredients
 
 module.exports=router;
 

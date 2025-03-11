@@ -209,7 +209,27 @@ const searchRecipesByIngredients = async (req, res) => {
     }
   };
   
+const searchRecipeByName = async(req,res)=>{
+    const {recipe_name} = req.body;
+    if(!recipe_name){
+        return res.status(500).json('please provide us with the recipe name .');
+    }
+    try {
+        const existingRecipe = await Recipe.find({
+            recipe_title: {
+                $regex : recipe_name , 
+                $options : 'i'
+            }//regex for case insensitive
+        });
+        if(existingRecipe.length === 0) return res.status(404).json({ message: 'No matching recipes found.' });
+        
+        return res.status(200).json(existingRecipe);
 
+    } catch (error) {
+        return res.status(500).json({ message: 'Error searching recipe', error: error.message });
+        
+    }
+}
 
 const deleteAllRecipes = async(req,res) =>{
     try {
@@ -245,4 +265,4 @@ const deleteRecipe = async(req,res)=>{
 }
 module.exports = {getRecipes , getRecipe , addRecipe 
     , editRecipe , deleteRecipe , searchRecipesByIngredients 
-    , deleteRecipe , deleteAllRecipes , getUserRecipes};
+    , deleteRecipe , deleteAllRecipes , getUserRecipes,searchRecipeByName};
