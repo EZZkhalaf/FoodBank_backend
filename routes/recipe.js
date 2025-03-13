@@ -1,6 +1,7 @@
 const express = require('express');
 const { getRecipes , getRecipe, editRecipe, addRecipe, deleteRecipe
-     , searchRecipesByIngredients ,deleteAllRecipes , getUserRecipes ,searchRecipeByName} = require('../Controllers/Recipe');
+     , searchRecipesByIngredients ,deleteAllRecipes , getUserRecipes ,searchRecipeByName,
+     getMultipleRecipesData} = require('../Controllers/Recipe');
 const router = express.Router();
 
 
@@ -19,6 +20,8 @@ router.post('/searchRecipeByName' , searchRecipeByName);//for the search box for
 router.post('/search' , searchRecipesByIngredients);//search using ingredients
 
 router.get('/getUserRecipes/:userid' ,getUserRecipes) //search recipe by name
+
+router.post('/getMultipleRecipesData' , getMultipleRecipesData); //for the svaed recipe page update 
 
 router.put('/:id' ,editRecipe)//edit the recipe
 

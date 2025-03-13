@@ -5,6 +5,7 @@ const Ingredient = require('../model/ingredient');
 const User = require('../model/User');
 const ingredient = require('../model/ingredient');
 const mongoose = require('mongoose');
+const recipe = require('../model/recipe');
 
 const getRecipes = async(req,res)=>{
     const recipes = await Recipe.find();
@@ -174,6 +175,31 @@ const editRecipe = async (req, res) => {
     }
 };
 
+const getMultipleRecipesData = async (req,res) => {
+    const {recipeIds} = req.body;
+
+    if(!recipeIds || !Array.isArray(recipeIds)) return res.status(400).json({message : 'invalid recipe id type .'})
+    try {
+
+        // Validate and filter only valid ObjectIds
+        const validIds = recipeIds.filter(id => /^[0-9a-fA-F]{24}$/.test(id));
+        
+        if (validIds.length === 0) {
+            return res.status(400).json({ message: 'No valid recipe IDs provided.' });
+        }
+
+        //turn the ids string into mongo object
+        const RecipesIdsObject  = validIds.map(rid => new mongoose.Types.ObjectId(rid));
+
+        const recipes = await Recipe.find({ _id : {$in : RecipesIdsObject}}) ;
+
+        return res.status(200).json(recipes);
+     } catch (error) {
+        console.error('Error fetching saved recipes:', error);
+        res.status(500).json({ message: 'Server error' });
+     }
+
+}
 
 
 const searchRecipesByIngredients = async (req, res) => {
@@ -265,4 +291,5 @@ const deleteRecipe = async(req,res)=>{
 }
 module.exports = {getRecipes , getRecipe , addRecipe 
     , editRecipe , deleteRecipe , searchRecipesByIngredients 
-    , deleteRecipe , deleteAllRecipes , getUserRecipes,searchRecipeByName};
+    , deleteRecipe , deleteAllRecipes , getUserRecipes
+    ,searchRecipeByName , getMultipleRecipesData};

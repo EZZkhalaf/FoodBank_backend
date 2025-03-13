@@ -1,11 +1,13 @@
 const express = require('express');
 
 const {getAllUsers , CreateUser , loginUser, searchUser,
-     followUser, saveRecipe, unsaveRecipe, deleteOwnRecipe,
+     toggleFollowUser, saveRecipe, unsaveRecipe, deleteOwnRecipe,
      logout,
      getUserById,
      checkSaved,
-     getSavedRecipes} = require('../Controllers/User');
+     getSavedRecipes,
+     
+     checkFollowStatus} = require('../Controllers/User');
 
 
 const router = express.Router();
@@ -18,9 +20,13 @@ router.post('/register' , CreateUser);
 router.post('/login' , loginUser);
 router.get('/logout' , logout);
 
-router.post('/search' , searchUser);
+router.post('/search/' , searchUser);
 router.post('/getUserById' , getUserById)
-router.post('/follow' , followUser);
+router.post('/toggleFollow' , toggleFollowUser);
+
+router.post('/checkFollowStatus' , checkFollowStatus);
+
+
 
 router.post('/checkSave' , checkSaved);
 router.post('/save' , saveRecipe);

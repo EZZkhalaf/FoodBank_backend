@@ -165,7 +165,25 @@ const loginUser = async (req, res) => {
     }
 };
 
+const checkFollowStatus = async(req,res) =>{
+    const {currentuserId , otheruserid} = req.body ;
+    if(!currentuserId || !otheruserid) {
+        return res,status(500).json('no id provided')
+    }
+    try {
+        const currentuser = await User.findById(currentuserId);
+        const otheruser = await User.findById(otheruserid);
+        
+        
+        if(!currentuser ) return res.status(404).json('no current user please log in')
+        if(!otheruser)  return res.status(404).json('user not found')   
 
+        const isFollowing =  currentuser.following.includes(otheruserid);
+        return res.status(200).json({ isFollowing });
+    } catch (error) {
+        return res.status(500).json({message:"server error " , error :err})   
+    }
+}
 
 const logout = async(req,res)=>{
     try {
@@ -177,7 +195,9 @@ const logout = async(req,res)=>{
 }
 
 
-const followUser = async(req,res)=>{
+
+
+const toggleFollowUser = async(req,res)=>{
     const {currentuserid , followinguserid} = req.body;
     try{
         const currentuser = await User.findById(currentuserid);
@@ -192,15 +212,25 @@ const followUser = async(req,res)=>{
         
         
         if(currentuser.following.includes(followinguserid)){
-            return res.status(409).json('user already added ')
+            currentuser.following = currentuser.following.filter(id => id !== followinguserid)
+            followingUser.followers =  followingUser.followers.filter(id => id !== currentuserid)
+
+            await currentuser.save();
+            await followingUser.save();
+            return res.status(200).json('user removed successfully')
+
         }
+        else if(!currentuser.following.includes(followinguserid)){
 
         currentuser.following.push(followinguserid);
         followingUser.followers.push(currentuserid);
+        
         await currentuser.save();
         await followingUser.save();
-
         return res.status(200).json('user added successfully')
+    }
+
+
 
     }catch(err){
         return res.status(500).json({message:"server error " , error :err})
@@ -237,6 +267,7 @@ const getSavedRecipes = async(req,res)=>{
     try {
         const currentUser = await User.findById(userid);
         if(!currentUser) return res.status(404).json('no user found with this id ');
+        
         
         return res.status(200).json(currentUser.savedRecipes);
     
@@ -331,7 +362,7 @@ const deleteOwnRecipe = async(req,res)=>{
 }
 
 module.exports = {getAllUsers , CreateUser , 
-    loginUser , searchUser , followUser , saveRecipe ,
+    loginUser , searchUser , toggleFollowUser , saveRecipe ,
     unsaveRecipe,deleteOwnRecipe , logout, getUserById,
-    checkSaved , getSavedRecipes};
+    checkSaved , getSavedRecipes , checkFollowStatus};
 

@@ -44,7 +44,18 @@ const recipeSchema = new mongoose.Schema({
     Bookmarks:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'
-    }]
+    }],
+    cookingTime:{
+        type: Number ,
+        required : true ,
+        min  : [1,'Cooking time must be at least 1 minute'],
+        default : 30
+    },
+    difficullty:{
+        type: String ,
+        required:true ,
+        default:'medium'
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Recipe', recipeSchema);
