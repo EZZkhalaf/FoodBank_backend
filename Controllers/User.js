@@ -165,25 +165,30 @@ const loginUser = async (req, res) => {
     }
 };
 
-const checkFollowStatus = async(req,res) =>{
-    const {currentuserId , otheruserid} = req.body ;
-    if(!currentuserId || !otheruserid) {
-        return res,status(500).json('no id provided')
-    }
-    try {
-        const currentuser = await User.findById(currentuserId);
-        const otheruser = await User.findById(otheruserid);
-        
-        
-        if(!currentuser ) return res.status(404).json('no current user please log in')
-        if(!otheruser)  return res.status(404).json('user not found')   
 
-        const isFollowing =  currentuser.following.includes(otheruserid);
-        return res.status(200).json({ isFollowing });
-    } catch (error) {
-        return res.status(500).json({message:"server error " , error :err})   
+
+
+const checkFollowStatus = async (req, res) => {
+    const { currentuserid, otheruserid } = req.body;
+
+    if (!currentuserid || !otheruserid) {
+        return res.status(400).json({ message: "No ID provided" });
     }
-}
+
+    try {
+        const currentuser = await User.findById(currentuserid);
+        const otheruser = await User.findById(otheruserid);
+
+        if (!currentuser) return res.status(404).json({ message: "Current user not found, please log in" });
+        if (!otheruser) return res.status(404).json({ message: "Other user not found" });
+
+        const isFollowing = currentuser.following.includes(otheruserid);
+        return res.status(200).json({ isFollowing });
+
+    } catch (error) {
+        return res.status(500).json({ message: "Server error", error });
+    }
+};
 
 const logout = async(req,res)=>{
     try {
@@ -199,6 +204,13 @@ const logout = async(req,res)=>{
 
 const toggleFollowUser = async(req,res)=>{
     const {currentuserid , followinguserid} = req.body;
+
+
+
+    if (!currentuserid || !followinguserid)  return res.status(400).json({ message: "Missing required fields." });
+    
+    if (currentuserid === followinguserid)  return res.status(400).json({ message: "You cannot follow yourself." });
+    
     try{
         const currentuser = await User.findById(currentuserid);
         const followingUser = await User.findById(followinguserid);
@@ -209,33 +221,29 @@ const toggleFollowUser = async(req,res)=>{
         if(!followingUser){
             return res.status(404).json('user not found')
         }
-        
-        
-        if(currentuser.following.includes(followinguserid)){
-            currentuser.following = currentuser.following.filter(id => id !== followinguserid)
-            followingUser.followers =  followingUser.followers.filter(id => id !== currentuserid)
 
-            await currentuser.save();
-            await followingUser.save();
-            return res.status(200).json('user removed successfully')
+        const isFollowing = currentuser.following.includes(followinguserid);
 
+        if(isFollowing){
+            currentuser.following = currentuser.following.filter(id => String(id) !== String(followinguserid));
+            followingUser.followers = followingUser.followers.filter(id => String(id) !== String(currentuserid));
+            await Promise.all([currentuser.save(), followingUser.save()]);
+
+            return res.status(200).json( {message :"User unfollowed successfully" , isFollowing:false} );
+        }else{
+            currentuser.following.push(followinguserid);
+            followingUser.followers.push(currentuserid);
+
+            await Promise.all([currentuser.save(), followingUser.save()]);
+            
+            return res.status(200).json({message : 'user Followed successfully' , isFollowing:true})
         }
-        else if(!currentuser.following.includes(followinguserid)){
-
-        currentuser.following.push(followinguserid);
-        followingUser.followers.push(currentuserid);
-        
-        await currentuser.save();
-        await followingUser.save();
-        return res.status(200).json('user added successfully')
-    }
-
-
-
+    
     }catch(err){
         return res.status(500).json({message:"server error " , error :err})
     }
 }
+
 
 
 const checkSaved = async(req,res)=>{ //this controller for checking if the user already bookmarked the recipe or no (for frontend part)
