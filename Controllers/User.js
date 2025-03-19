@@ -12,9 +12,36 @@ const getAllUsers = async(req,res) =>{
 }
 
 
-
 const editProfile = async(req,res)=>{
-    //to be continued
+    const {newUsername , newBio, newPicture , userId} = req.body;
+    if(!userId) return res.status(400).json({message : 'user id required , errror from the request.'});
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+
+        //checking and inserting the new elements(fields)
+        const updateFields = {};
+        if(newUsername) updateFields.username = newUsername;
+        if(newBio) updateFields.bio = newBio;
+        if(newPicture)  updateFields.profilePic = newPicture;
+
+        //check if no updates
+        if(Object.keys(updateFields).length === 0 )
+                 return res.status(200).json({message : 'no changes in the user profile .' , user});
+        
+        const updateUser = await User.findByIdAndUpdate( 
+            userId , 
+            {$set : updateFields},
+            {new:true}
+        );
+
+        return res.status(200).json({message : 'user update successfully ' , user:updateUser})
+    } catch (error) {   
+        return res.status(500).json({message : 'server error ,' , error:error});
+    }
 }
 
 
@@ -372,5 +399,5 @@ const deleteOwnRecipe = async(req,res)=>{
 module.exports = {getAllUsers , CreateUser , 
     loginUser , searchUser , toggleFollowUser , saveRecipe ,
     unsaveRecipe,deleteOwnRecipe , logout, getUserById,
-    checkSaved , getSavedRecipes , checkFollowStatus};
+    checkSaved , getSavedRecipes , checkFollowStatus , editProfile};
 

@@ -2,12 +2,8 @@ const express = require('express');
 
 const {getAllUsers , CreateUser , loginUser, searchUser,
      toggleFollowUser, saveRecipe, unsaveRecipe, deleteOwnRecipe,
-     logout,
-     getUserById,
-     checkSaved,
-     getSavedRecipes,
-     
-     checkFollowStatus} = require('../Controllers/User');
+     logout, getUserById,checkSaved,getSavedRecipes,checkFollowStatus,
+     editProfile} = require('../Controllers/User');
 
 
 const router = express.Router();
@@ -19,6 +15,7 @@ router.get('/' , getAllUsers);
 router.post('/register' , CreateUser);
 router.post('/login' , loginUser);
 router.get('/logout' , logout);
+router.post('/updateTheUserProfile' , editProfile)
 
 router.post('/search/' , searchUser);
 router.post('/getUserById' , getUserById)

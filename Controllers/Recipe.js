@@ -206,34 +206,31 @@ const searchRecipesByIngredients = async (req, res) => {
     const { ingredients } = req.body;
   
     // Ensure the ingredients array is valid
-    if (!Array.isArray(ingredients) || ingredients.length === 0) {
-      return res.status(400).json({ message: 'Please provide a valid list of ingredients to search for.' });
-    }
+    if (!Array.isArray(ingredients) || ingredients.length === 0)  return res.status(400).json({ message: 'Please provide a valid list of ingredients to search for.' });
+    
   
     try {
       // Extract the ingredient names from the request body
       const ingredientNames = ingredients.map(ingredient => ingredient.ingredient_name).filter(Boolean);
   
       // Ensure the ingredient names are valid (non-empty)
-      if (ingredientNames.length === 0) {
-        return res.status(400).json({ message: 'Ingredient names cannot be empty.' });
-      }
+      if (ingredientNames.length === 0)  return res.status(400).json({ message: 'Ingredient names cannot be empty.' });
+      
   
       // Find recipes that match any of the ingredients
-      const recipes = await Recipe.find({
+      const recipes = await Recipe.find({ 
         'ingredients.name': { $in: ingredientNames }
-      }).lean(); // Optimize query by using .lean()
+    }).lean(); // Optimize query by using .lean()
   
-      if (recipes.length === 0) {
-        return res.status(404).json({ message: 'No recipes found for the given ingredients.' });
-      }
+      if (recipes.length === 0) return res.status(404).json({ message: 'No recipes found for the given ingredients.' });
+      
   
       return res.status(200).json(recipes);
     } catch (error) {
       console.error('Error searching recipes:', error);
       return res.status(500).json({ message: 'Error searching recipes', error: error.message });
     }
-  };
+};
   
 const searchRecipeByName = async(req,res)=>{
     const {recipe_name} = req.body;
