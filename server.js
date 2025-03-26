@@ -3,14 +3,21 @@ const dotenv = require('dotenv').config();
 const connectdb = require('./Config/mongoConnect');
 const jwt = require('jsonwebtoken')
 const cors = require('cors');
+const cloudinary = require('./cloudinaryConfig')
+
 
 const app = express();
-app.use(cors())
+const corsOption = {
+    origin: 'http://localhost:5173', // Allow only requests from this origin
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+}
+app.use(cors(corsOption))
 
 const PORT = process.env.PORT || 5000;
 connectdb();
 
 app.use(express.json())
+
 
 app.use('/recipe' ,require("./routes/recipe"));
 app.use('/user' , require('./routes/user'));

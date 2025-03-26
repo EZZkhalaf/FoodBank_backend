@@ -7,27 +7,39 @@ const Recipe = require('../model/recipe')
 const {deleteRecipe} = require('../Controllers/Recipe')
 const {generateTokenAndSetCookie} = require('../lib/utils/gentoken.js')
 
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+
+
 const getAllUsers = async(req,res) =>{
    return  res.json({message:"get all users"})
 }
 
 
 const editProfile = async(req,res)=>{
-    const {newUsername , newBio, newPicture , userId} = req.body;
-    if(!userId) return res.status(400).json({message : 'user id required , errror from the request.'});
+    const {newUsername , newBio, userId ,image } = req.body;
+    
+    // console.log(image)
+    if(!userId) return res.status(400).json({message : 'user id required , error from the request.'});
     try {
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
         }
-
-
+        
+        
         //checking and inserting the new elements(fields)
         const updateFields = {};
         if(newUsername) updateFields.username = newUsername;
         if(newBio) updateFields.bio = newBio;
-        if(newPicture)  updateFields.profilePic = newPicture;
-
+        if(image)  updateFields.profilePic = image;
+        // console.log('testing')
+        
         //check if no updates
         if(Object.keys(updateFields).length === 0 )
                  return res.status(200).json({message : 'no changes in the user profile .' , user});
@@ -396,8 +408,69 @@ const deleteOwnRecipe = async(req,res)=>{
     }
 }
 
+
+
+// const updateProfilePicture = async (req, res) => {
+//     const {image , userId } = req.body;
+
+//     try {
+
+//     const user = await User.findById(userId);
+//     if(!user) return res.status(404).json({message : "user not found"});
+
+//     const uploadResult = await cloudinary.uploader
+//     .upload(image , {
+//         upload_preset:'unsigned_upload',
+//         public_id : `${user.username}_profile`,
+//         allowed_formats : ['png','jpg','jpeg','svg','webp']
+//     }, (err,res) =>{
+//         if(err) console.log(err);
+//         console.log(res)
+//     })
+//     .catch((error) => {
+//         console.log(error);
+//         res.status(200).json(res);
+//     });
+ 
+//         res.status(200).json(uploadResult);
+//     } catch (error) {
+//         console.log(error)
+//         return res.status(500).json({message:'server error' , error:err});
+//     }
+
+
+
+// };
+
+
+const updateProfilePicture = async (req, res) => {
+    const { image, userId } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const uploadResult = await cloudinary.uploader.upload(image, {
+            upload_preset: 'unsigned_upload',
+            public_id: `${user.username}_profile`,
+            allowed_formats: ['png', 'jpg', 'jpeg', 'svg', 'webp']
+        });
+
+        return res.status(200).json(uploadResult);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+  
+
+
+
 module.exports = {getAllUsers , CreateUser , 
     loginUser , searchUser , toggleFollowUser , saveRecipe ,
     unsaveRecipe,deleteOwnRecipe , logout, getUserById,
-    checkSaved , getSavedRecipes , checkFollowStatus , editProfile};
+    checkSaved , getSavedRecipes , checkFollowStatus ,
+     editProfile , updateProfilePicture};
 
