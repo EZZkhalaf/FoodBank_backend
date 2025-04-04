@@ -205,8 +205,6 @@ const loginUser = async (req, res) => {
 };
 
 
-
-
 const checkFollowStatus = async (req, res) => {
     const { currentuserid, otheruserid } = req.body;
 
@@ -237,8 +235,6 @@ const logout = async(req,res)=>{
         return res.status(500).json({Error:err})
     }
 }
-
-
 
 
 const toggleFollowUser = async(req,res)=>{
@@ -282,7 +278,6 @@ const toggleFollowUser = async(req,res)=>{
         return res.status(500).json({message:"server error " , error :err})
     }
 }
-
 
 
 const checkSaved = async(req,res)=>{ //this controller for checking if the user already bookmarked the recipe or no (for frontend part)
@@ -407,40 +402,6 @@ const deleteOwnRecipe = async(req,res)=>{
         return res.status(500).json({ message: 'Error deleting recipe', error: error.message });
     }
 }
-
-
-
-// const updateProfilePicture = async (req, res) => {
-//     const {image , userId } = req.body;
-
-//     try {
-
-//     const user = await User.findById(userId);
-//     if(!user) return res.status(404).json({message : "user not found"});
-
-//     const uploadResult = await cloudinary.uploader
-//     .upload(image , {
-//         upload_preset:'unsigned_upload',
-//         public_id : `${user.username}_profile`,
-//         allowed_formats : ['png','jpg','jpeg','svg','webp']
-//     }, (err,res) =>{
-//         if(err) console.log(err);
-//         console.log(res)
-//     })
-//     .catch((error) => {
-//         console.log(error);
-//         res.status(200).json(res);
-//     });
- 
-//         res.status(200).json(uploadResult);
-//     } catch (error) {
-//         console.log(error)
-//         return res.status(500).json({message:'server error' , error:err});
-//     }
-
-
-
-// };
 
 
 const updateProfilePicture = async (req, res) => {

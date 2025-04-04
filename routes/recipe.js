@@ -4,7 +4,9 @@ const { getRecipes , getRecipe, editRecipe, addRecipe, deleteRecipe
      getMultipleRecipesData} = require('../Controllers/Recipe');
 const router = express.Router();
 
-
+const multer = require('multer')
+// const upload = require('../multerConfig');
+const upload = multer();
 
 
 
@@ -23,7 +25,7 @@ router.get('/getUserRecipes/:userid' ,getUserRecipes) //search recipe by name
 
 router.post('/getMultipleRecipesData' , getMultipleRecipesData); //for the svaed recipe page update 
 
-router.put('/:id' ,editRecipe)//edit the recipe
+router.post('/:RecipeId' ,upload.single('image') , editRecipe)//edit the recipe
 
 router.delete('/' ,deleteRecipe)//delete the recipe
 
