@@ -168,7 +168,7 @@ const loginUser = async (req, res) => {
 const checkFollowStatus = async(req,res) =>{
     const {currentuserId , otheruserid} = req.body ;
     if(!currentuserId || !otheruserid) {
-        return res,status(500).json('no id provided')
+        return res.status(500).json('no id provided')
     }
     try {
         const currentuser = await User.findById(currentuserId);

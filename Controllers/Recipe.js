@@ -1,4 +1,3 @@
-
 const express = require('express');
 const Recipe = require("../model/recipe");
 const Ingredient = require('../model/ingredient');
@@ -141,7 +140,10 @@ const addRecipe = async (req, res) => {
         user.ownRecipes.push(newRecipe._id);
         await user.save();
 
-        return res.status(201).json('Recipe created successfully...');
+        return res.status(201).json({
+            message: 'Recipe created successfully...',
+            recipeId: newRecipe._id
+        });    
     } catch (error) {
         return res.status(500).json({ message: 'Error creating recipe', error: error.message });
     }

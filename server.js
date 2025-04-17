@@ -10,7 +10,9 @@ app.use(cors())
 const PORT = process.env.PORT || 5000;
 connectdb();
 
-app.use(express.json())
+// Increase payload limit
+app.use(express.json({ limit: '10mb' })); 
+
 
 app.use('/recipe' ,require("./routes/recipe"));
 app.use('/user' , require('./routes/user'));
