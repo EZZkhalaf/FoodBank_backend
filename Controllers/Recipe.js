@@ -269,21 +269,21 @@ const deleteAllRecipes = async(req,res) =>{
 }
 
 const deleteRecipe = async(req,res)=>{
-    const {recipeid} = req.body ; 
+    const {recipeId} = req.body ; 
 
-    if(!recipeid){
+    if(!recipeId){
         return res.status(500).json('fill the required field');
     }
 
     try{
-        const deleteRecipe = await Recipe.findById(recipeid);
+        const deleteRecipe = await Recipe.findById(recipeId);
 
         if(!deleteRecipe){
             return res.status(404).json('recipe dont exist');
 
         }
 
-        await Recipe.findByIdAndDelete(recipeid);
+        await Recipe.findByIdAndDelete(recipeId);
         return res.status(200).json('successfully deleted ...')
 
 
