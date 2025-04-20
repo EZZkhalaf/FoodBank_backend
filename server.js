@@ -16,7 +16,7 @@ app.use(cors(corsOption))
 const PORT = process.env.PORT || 5000;
 connectdb();
 
-app.use(express.json())
+app.use(express.json({ limit: '10mb' })); 
 
 
 app.use('/recipe' ,require("./routes/recipe"));
