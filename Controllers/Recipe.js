@@ -214,7 +214,7 @@ const addRecipe = async (req, res) => {
 
             // 提交事务
             await session.commitTransaction();
-            res.status(201).json({ message: 'Recipes created successfully.' });
+            res.status(201).json({ message: 'Recipes created successfully.', recipeId: newRecipes.map(r => r._id) });
 
         } catch (error) {
             await session.abortTransaction();
