@@ -15,6 +15,7 @@ const getRecipes = async(req,res)=>{
 
 }
 
+
 const getRecipesPerPage = async (req, res) => {
 
   try {
@@ -59,8 +60,6 @@ const getRecipesPerPage = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
-
 
 
 const getRecipe = async (req, res) => {
@@ -120,12 +119,6 @@ const getUserRecipes = async (req, res) => {
       return res.status(500).json({ message: 'Server error' });
     }
 };
-
-
-
-
-
-
 
 
 const addRecipe = async (req, res) => {
@@ -264,7 +257,8 @@ const editRecipe = async (req, res) => {
           console.error("Error updating recipe:", error);
           return res.status(400).json({ message: error.message });
         }
-      }
+}
+
 
 const getMultipleRecipesData = async (req,res) => {
     const {recipeIds} = req.body;
@@ -291,9 +285,6 @@ const getMultipleRecipesData = async (req,res) => {
      }
 
 }
-
-
-
 
 const searchRecipesByIngredients = async (req, res) => {
     try {
@@ -327,7 +318,7 @@ const searchRecipesByIngredients = async (req, res) => {
       console.error('Error searching recipes:', error);
       return res.status(500).json({ message: 'Error searching recipes', error: error.message });
     }
-  };
+};
   
 const searchRecipeByName = async(req,res)=>{
     const {recipe_name} = req.body;
@@ -359,7 +350,6 @@ const deleteAllRecipes = async(req,res) =>{
         console.log(error)
     }
 }
-
 
 const deleteRecipe = async (req, res) => {
     try {
@@ -417,7 +407,7 @@ const deleteRecipe = async (req, res) => {
         success: false
       });
     }
-  };
+};
 
 module.exports = {getRecipes , getRecipe , addRecipe 
     , editRecipe , deleteRecipe , searchRecipesByIngredients 
