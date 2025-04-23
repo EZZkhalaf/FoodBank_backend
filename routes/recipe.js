@@ -1,7 +1,8 @@
 const express = require('express');
 const { getRecipes , getRecipe, editRecipe, addRecipe, deleteRecipe
      , searchRecipesByIngredients ,deleteAllRecipes , getUserRecipes ,searchRecipeByName,
-     getMultipleRecipesData} = require('../Controllers/Recipe');
+     getMultipleRecipesData,
+     getRecipesPerPage} = require('../Controllers/Recipe');
 const router = express.Router();
 
 const multer = require('multer')
@@ -13,6 +14,8 @@ const upload = multer();
 router.get('/' ,getRecipes)//all recipe
 
 router.post('/' ,addRecipe)
+
+router.get('/getRecipesPerPage' , getRecipesPerPage);
 
 router.get('/:id' ,getRecipe) //search recipe by name(a single recipe )
 
@@ -27,7 +30,7 @@ router.post('/getMultipleRecipesData' , getMultipleRecipesData); //for the svaed
 
 router.post('/:RecipeId' ,upload.single('image') , editRecipe)//edit the recipe
 
-router.delete('/' ,deleteRecipe)//delete the recipe
+router.delete('/:recipeid' ,deleteRecipe)//delete the recipe
 
 router.delete('/all' ,deleteAllRecipes)//delete all recipes
 
