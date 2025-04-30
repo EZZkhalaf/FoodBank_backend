@@ -3,7 +3,7 @@ const fetch = require('node-fetch')
 
 const improveInstructions = async (req, res) => {
   const { message } = req.body;
-  const firstPrompt = "I want you to explain in one paragraph. Between each step, put a '. 'no numbers or anything just one paragraph  Make it simple and clear. Don't use 'first', 'second', or any numbering. Only provide the instructions. Here's the content:";  
+  const firstPrompt = "I want you to explain in one paragraph. Between each step put a '. 'no numbers or anything just one paragraph  Make it simple and clear. Don't use 'first', 'second', or any numbering. Only provide the instructions. Here's the content:";  
   const fullMessage = firstPrompt + message;
   const API_INSTRUCTIONS = process.env.API_INSTRUCTIONS_IMPROVE_KEY;
 

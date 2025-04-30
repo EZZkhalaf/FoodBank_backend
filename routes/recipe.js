@@ -2,7 +2,8 @@ const express = require('express');
 const { getRecipes , getRecipe, editRecipe, addRecipe, deleteRecipe
      , searchRecipesByIngredients ,deleteAllRecipes , getUserRecipes ,searchRecipeByName,
      getMultipleRecipesData,
-     getRecipesPerPage} = require('../Controllers/Recipe');
+     getRecipesPerPage,
+     getPopularRecipe} = require('../Controllers/Recipe');
 const router = express.Router();
 
 const multer = require('multer')
@@ -19,6 +20,7 @@ router.get('/getRecipesPerPage' , getRecipesPerPage);
 
 router.get('/:id' ,getRecipe) //search recipe by name(a single recipe )
 
+router.get('/mostPopularRecipe/first', getPopularRecipe);
 
 router.post('/searchRecipeByName' , searchRecipeByName);//for the search box for the other users recipes
 

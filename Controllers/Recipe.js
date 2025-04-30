@@ -85,6 +85,52 @@ const getRecipe = async (req, res) => {
     }
 };
 
+// const getPopulerRecipe = async(req,res)=>{
+//   try {
+//     const recipes = await Recipe.find();
+//     if (!recipes || recipes.length === 0) {
+//       return res.status(404).json({ message: 'No recipes found' });
+//     }
+
+//     const theRecipe = recipes.reduce((max,recipe) => 
+//       (recipe.Bookmarks?.length || 0) > (max.Bookmarks?.length || 0) ? recipe : max  
+//     )
+
+//     return res.status(200).json(theRecipe);
+//   } catch (error) {
+//     return res.status(500).json({ 
+//       message: 'Error finding recipes', 
+//       error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error' 
+//   });
+//   }
+// }
+
+
+
+
+const getPopularRecipe = async (req, res) => {
+  try {
+    const recipes = await Recipe.find();
+
+    if (!recipes || recipes.length === 0) {
+      return res.status(404).json({ message: 'No recipes found' });
+    }
+
+    const theRecipe = recipes.reduce((max, recipe) => {
+      const currentCount = Array.isArray(recipe.Bookmarks) ? recipe.Bookmarks.length : 0;
+      const maxCount = Array.isArray(max.Bookmarks) ? max.Bookmarks.length : 0;
+      return currentCount > maxCount ? recipe : max;
+    });
+
+    return res.status(200).json(theRecipe);
+  } catch (error) {
+    console.error(error); // helpful in development
+    return res.status(500).json({
+      message: 'Error finding recipes',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+    });
+  }
+};
 
 const getUserRecipes = async (req, res) => {
     const userId = req.params.userid;
@@ -130,7 +176,8 @@ const addRecipe = async (req, res) => {
 
     for (const recipe of recipes) {
         if (!recipe.recipe_title || !recipe.instructions || !recipe.ingredients || !recipe.recipe_user || !recipe.type) {
-            return res.status(400).json({ message: 'One or more recipes are missing required fields.' });
+          console.log("testing") 
+          return res.status(400).json({ message: 'One or more recipes are missing required fields.' });
         }
     }
 
@@ -412,4 +459,4 @@ const deleteRecipe = async (req, res) => {
 module.exports = {getRecipes , getRecipe , addRecipe 
     , editRecipe , deleteRecipe , searchRecipesByIngredients 
     , deleteRecipe , deleteAllRecipes , getUserRecipes
-    ,searchRecipeByName , getMultipleRecipesData , getRecipesPerPage};
+    ,searchRecipeByName , getMultipleRecipesData , getRecipesPerPage , getPopularRecipe};
