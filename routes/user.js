@@ -17,10 +17,16 @@ const {
   getSavedRecipes,
   checkFollowStatus, 
   editProfile,
-  updateProfilePicture
+  updateProfilePicture,
+  getUserFeed
 } = require('../Controllers/User');
 
-const multer = require('multer')
+const multer = require('multer');
+const { protect } = require('../middleware/protect');
+
+
+
+
 // const upload = require('../multerConfig');
 const upload = multer();
 
@@ -69,5 +75,12 @@ router.get('/savedRecipes/:userid', getSavedRecipes);
 
 // Delete a user's own recipe
 router.post('/removeRecipe', deleteOwnRecipe);
+
+//display the other users recipes in the user home page 
+// router.get('/getUserFeed' ,  getUserFeed);
+
+
+//this is the same as above but with a middleware to ensure the security using the token , will add later 
+router.get('/getUserFeed' , protect, getUserFeed);
 
 module.exports = router;

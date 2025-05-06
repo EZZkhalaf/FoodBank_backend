@@ -423,6 +423,30 @@ const updateProfilePicture = async (req, res) => {
     }
 };
 
+
+
+
+const getUserFeed = async(req,res) =>{
+   
+    try {
+        const user = await User.findById(req.user.id);
+
+        if(!user){
+            return res.status(404).json({message:"user not found"})
+        }
+
+        const recipes = await Recipe.find({recipe_user : {$in : user.following}})
+                                        .sort({createdAt : -1})
+                                        .populate("recipe_user","userProfilePic");
+
+        return res.status(200).json(recipes);
+        
+    } catch (error) {
+        console.error("Error fetching feed:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
   
 
 
@@ -431,5 +455,5 @@ module.exports = {getAllUsers , CreateUser ,
     loginUser , searchUser , toggleFollowUser , saveRecipe ,
     unsaveRecipe,deleteOwnRecipe , logout, getUserById,
     checkSaved , getSavedRecipes , checkFollowStatus ,
-     editProfile , updateProfilePicture};
+     editProfile , updateProfilePicture,getUserFeed};
 
