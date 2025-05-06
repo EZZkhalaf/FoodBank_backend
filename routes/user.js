@@ -18,7 +18,8 @@ const {
   checkFollowStatus, 
   editProfile,
   updateProfilePicture,
-  getUserFeed
+  getUserFeed,
+  getMultiUsersById
 } = require('../Controllers/User');
 
 const multer = require('multer');
@@ -79,6 +80,9 @@ router.post('/removeRecipe', deleteOwnRecipe);
 //display the other users recipes in the user home page 
 // router.get('/getUserFeed' ,  getUserFeed);
 
+
+//for the following and followers panel 
+router.post('/getMultiUsersById', getMultiUsersById);
 
 //this is the same as above but with a middleware to ensure the security using the token , will add later 
 router.get('/getUserFeed' , protect, getUserFeed);

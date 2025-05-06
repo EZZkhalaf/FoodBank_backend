@@ -96,6 +96,26 @@ const getUserById = async(req,res)=>{
     }
 }
 
+const getMultiUsersById = async(req,res)=>{
+    const {userIds} = req.body;
+
+    //check if valide? 
+    if(!Array.isArray(userIds)|| userIds.length === 0){
+        return res.status(400).json({ message: 'userIds must be a non-empty array' });
+    }
+
+
+    try {
+        const users = await User.find({_id:{$in : userIds}}).select("-password")//dont return the users passwordsssss
+
+        if(users.length  === 0 ) return res.status(404).json({message:"no users found "})
+
+        return res.status(200).json(users);
+    } catch (err) {
+        console.error('Error in getMultiUsersById:', err);
+        return res.status(500).json({ message: 'Server error', error: err.message });
+    }
+}
 
 const CreateUser = async (req,res)=>{
     const {username , email , password , ConfirmPass} = req.body;
@@ -455,5 +475,5 @@ module.exports = {getAllUsers , CreateUser ,
     loginUser , searchUser , toggleFollowUser , saveRecipe ,
     unsaveRecipe,deleteOwnRecipe , logout, getUserById,
     checkSaved , getSavedRecipes , checkFollowStatus ,
-     editProfile , updateProfilePicture,getUserFeed};
+     editProfile , updateProfilePicture,getUserFeed , getMultiUsersById};
 
