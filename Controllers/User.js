@@ -447,17 +447,24 @@ const updateProfilePicture = async (req, res) => {
 
 
 const getUserFeed = async(req,res) =>{
-   
     try {
         const user = await User.findById(req.user.id);
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setDate(oneMonthAgo.getDate() - 30); //for fetching the latest recipe for the user this week 
 
         if(!user){
             return res.status(404).json({message:"user not found"})
         }
 
-        const recipes = await Recipe.find({recipe_user : {$in : user.following}})
-                                        .sort({createdAt : -1})
-                                        .populate("recipe_user","userProfilePic");
+        const recipes = await Recipe.find({
+            $and: [
+              { recipe_user: { $in: user.following } },
+              { recipe_user: { $ne: req.user.id } },
+              {createdAt : {$gte : oneMonthAgo}}
+            ]
+          })
+            .sort({ createdAt: -1 })
+            .populate("recipe_user", "userProfilePic");
 
         return res.status(200).json(recipes);
         
