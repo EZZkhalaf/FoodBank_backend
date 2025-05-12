@@ -24,6 +24,7 @@ const {
 
 const multer = require('multer');
 const { protect } = require('../middleware/protect');
+const emailVerification = require('../middleware/emailVerification');
 
 
 
@@ -37,7 +38,13 @@ const router = express.Router();
 router.get('/', getAllUsers);
 
 // User registration
-router.post('/register', CreateUser);
+// router.post('/register', CreateUser);
+
+
+//added the middleware
+router.post('/register',emailVerification, CreateUser);
+
+
 
 // User login
 router.post('/login', loginUser);
@@ -86,5 +93,6 @@ router.get('/getUserFeed' , protect, getUserFeed);
 //for the following and followers panel 
 router.post('/getMultiUsersById', getMultiUsersById);
 
+ 
 
 module.exports = router;
