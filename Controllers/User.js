@@ -58,6 +58,7 @@ const editProfile = async(req,res)=>{
 
 
 
+
 const searchUser = async(req,res) =>{
     const {username} = req.body;
 
@@ -450,7 +451,7 @@ const getUserFeed = async(req,res) =>{
     try {
         const user = await User.findById(req.user.id);
         const oneMonthAgo = new Date();
-        oneMonthAgo.setDate(oneMonthAgo.getDate() - 30 ); //for fetching the latest recipe for the user this week 
+        oneMonthAgo.setDate(oneMonthAgo.getDate() - 50 ); //for fetching the latest recipe for the user this week 
 
         if(!user){
             return res.status(404).json({message:"user not found"})
